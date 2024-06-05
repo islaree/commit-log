@@ -10,6 +10,8 @@
     "format": "prettier --ignore-path .gitignore --write \"**/*.{ts,tsx,css,scss}\""
   },
   "dependencies": {
+    "@supabase/ssr": "^0.3.0",
+    "@supabase/supabase-js": "^2.43.4",
     "next": "14.2.3",
     "react": "^18",
     "react-dom": "^18"
