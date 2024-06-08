@@ -31,8 +31,8 @@ export default async function LoginPage() {
 
   return (
     <>
-      <h1>this is login page!</h1>
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen flex-col items-center justify-center">
+        <div className="text-2xl font-bold">ログインする</div>
         <form action={signIn}>
           <Button>login</Button>
         </form>
