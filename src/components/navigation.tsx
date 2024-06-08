@@ -1,13 +1,24 @@
+import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
+import Image from 'next/image'
 
-export const Navigation = () => {
+export const Navigation = async () => {
+  const db = createClient()
+  const {
+    data: { user },
+  } = await db.auth.getUser()
+
   return (
     <div className="py-4">
-      <div className="flex items-center justify-between px-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400"></div>
-        <div>user_nameさん</div>
+      <div className="flex items-center justify-between px-2 py-1 hover:bg-gray-200">
+        <div className="flex h-6 w-6 items-center justify-center overflow-hidden rounded bg-gray-400">
+          <Image src={user?.user_metadata.avatar_url} alt="" width={40} height={40} />
+        </div>
+        <div>{user?.user_metadata.name}さん</div>
       </div>
-      <button>logout</button>
+      <form action="/auth/signout" method="post">
+        <button>signout</button>
+      </form>
       <div className="px-2 py-4">
         <div className="mb-4">
           <Link href="/dashboard" className="flex p-2 hover:bg-gray-200">
