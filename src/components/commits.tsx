@@ -21,7 +21,7 @@ type Message = {
   created_at: string
 }
 
-export const Messages = ({ data, productId }: { data: Message[]; productId: string }) => {
+export const Commits = ({ data, productId }: { data: Message[]; productId: string }) => {
   const [commits, setCommits] = useState(data)
   const [value, setValue] = useState('')
 
