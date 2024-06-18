@@ -33,7 +33,7 @@ export const Navigation = async () => {
         </Link>
       </div>
       <div className="px-2">
-        <Products user={user} data={data ?? []} />
+        <Products user={user} />
       </div>
     </div>
   )
