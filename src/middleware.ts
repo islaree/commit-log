@@ -1,32 +1,32 @@
-// import { NextResponse, type NextRequest } from 'next/server'
-// import { createClient } from '@/utils/supabase/middleware'
+import { NextResponse, type NextRequest } from 'next/server'
+import { createClient } from '@/utils/supabase/server'
 
-// export async function middleware(request: NextRequest) {
-//   const { supabase, response } = createClient(request)
-//   const {
-//     data: { user },
-//   } = await supabase.auth.getUser()
+export async function middleware(request: NextRequest) {
+  const db = createClient()
+  const {
+    data: { user },
+  } = await db.auth.getUser()
 
-//   if (
-//     !user &&
-//     !request.nextUrl.pathname.startsWith('/login') &&
-//     !request.nextUrl.pathname.startsWith('/auth/callback')
-//   ) {
-//     return NextResponse.redirect(new URL('/login', request.url))
-//   }
+  if (
+    !user &&
+    !request.nextUrl.pathname.startsWith('/login') &&
+    !request.nextUrl.pathname.startsWith('/auth/callback')
+  ) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
 
-//   return response
-// }
+  return
+}
 
-// export const config = {
-//   matcher: [
-//     /*
-//      * Match all request paths except for the ones starting with:
-//      * - _next/static (static files)
-//      * - _next/image (image optimization files)
-//      * - favicon.ico (favicon file)
-//      * Feel free to modify this pattern to include more paths.
-//      */
-//     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-//   ],
-// }
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
+}
