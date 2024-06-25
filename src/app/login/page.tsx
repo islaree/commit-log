@@ -11,9 +11,6 @@ import { FcGoogle } from 'react-icons/fc'
 
 export default async function LoginPage() {
   const db = createClient()
-  const {
-    data: { user },
-  } = await db.auth.getUser()
 
   const signIn = async () => {
     'use server'
