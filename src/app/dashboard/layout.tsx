@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <StoreProvider>
-      <div className="mx-auto max-w-2xl px-4">{children}</div>
+      <div className="mx-auto max-w-2xl">{children}</div>
     </StoreProvider>
   )
 }
