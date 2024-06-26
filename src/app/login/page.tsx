@@ -1,17 +1,16 @@
 import Link from 'next/link'
-
-import { Button } from '@/components/ui/button'
-import { createClient } from '@/utils/supabase/server'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+
 import { FcGoogle } from 'react-icons/fc'
 
-export default async function LoginPage() {
-  const db = createClient()
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { createClient } from '@/utils/supabase/server'
 
+export default function LoginPage() {
   const signIn = async () => {
     'use server'
     const db = createClient()
