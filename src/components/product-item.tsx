@@ -1,12 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
+import { cache, useEffect, useState } from 'react'
 import { UUID } from 'crypto'
-import { Bookmark, MessageSquareShare } from 'lucide-react'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { createClient } from '@/utils/supabase/client'
+import { PencilLine } from 'lucide-react'
 
 type Product = {
   completed: boolean
@@ -17,33 +17,24 @@ type Product = {
   description: string
 }
 
-export const ProductItem = ({ product }: { product: Product }) => {
+const getData = cache(async (id: string) => {
   const db = createClient()
+  const { data } = await db.from('commits').select().eq('product_id', id)
+  return data?.length
+})
 
-  const [commits, setCommits] = useState(0)
-  const [bookmark, setBookmark] = useState(0)
-
-  const getCommitsData = useCallback(async () => {
-    const { data, error } = await db.from('commits').select().eq('product_id', product.id)
-    if (!error) {
-      setCommits(data.length)
-    }
-  }, [commits])
-
-  const getBookmarksData = useCallback(async () => {
-    const { data, error } = await db
-      .from('commits')
-      .select()
-      .eq('product_id', product.id)
-      .eq('bookmark', true)
-    if (!error) {
-      setBookmark(data.length)
-    }
-  }, [commits])
+export const ProductItem = ({ product }: { product: Product }) => {
+  const [commits, setCommits] = useState<number>()
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    getCommitsData()
-    getBookmarksData()
+    const setData = async () => {
+      const data = await getData(product.id)
+      setCommits(data)
+      setLoading(true)
+    }
+
+    setData()
   }, [])
 
   return (
@@ -58,14 +49,15 @@ export const ProductItem = ({ product }: { product: Product }) => {
         <CardContent>
           <div className="flex space-x-4 text-sm text-muted-foreground">
             <div className="flex items-center">
-              <MessageSquareShare className="mr-1 h-3 w-3" />
-              {commits}
+              {loading ? (
+                <div className="flex items-center gap-x-2">
+                  <PencilLine className="h-4 w-4" />
+                  {commits}
+                </div>
+              ) : (
+                <>&nbsp;</>
+              )}
             </div>
-            <div className="flex items-center">
-              <Bookmark className="mr-1 h-3 w-3" />
-              {bookmark}
-            </div>
-            <div>Updated April 2023</div>
           </div>
         </CardContent>
       </Link>

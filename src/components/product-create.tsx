@@ -50,7 +50,9 @@ export const CreateProduct = ({ user }: { user: User | null }) => {
   return (
     <Dialog>
       <DialogTrigger asChild onClick={() => setIsActive(!isActive)}>
-        <Button variant="default">new product</Button>
+        <Button type="button" size="sm">
+          新規作成
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
