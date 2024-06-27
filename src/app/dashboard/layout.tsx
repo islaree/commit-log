@@ -1,14 +1,15 @@
-import { Navigation } from '@/components/navigation'
+import StoreProvider from '@/components/store-provider'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'contribute | dashboard',
+  description: '...',
+}
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <div className="flex min-h-screen">
-        <div className="w-60 border-r border-gray-100 bg-gray-100">
-          <Navigation />
-        </div>
-        <div className="w-full">{children}</div>
-      </div>
-    </>
+    <StoreProvider>
+      <div className="mx-auto max-w-2xl">{children}</div>
+    </StoreProvider>
   )
 }

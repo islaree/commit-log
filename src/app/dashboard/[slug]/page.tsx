@@ -1,11 +1,13 @@
 import { Messages } from '@/components/messages'
-import { ProductHeader } from '@/components/product-header'
+import { Product } from '@/components/product'
 
 export default function ProductPage({ params }: { params: { slug: string } }) {
   return (
-    <div className="relative h-screen">
-      <ProductHeader id={params.slug} />
-      <Messages productId={params.slug} />
-    </div>
+    <>
+      <div className="mb-6 mt-4 px-4">
+        <Product id={params.slug} />
+      </div>
+      <Messages />
+    </>
   )
 }
