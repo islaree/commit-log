@@ -17,6 +17,17 @@ import {
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer'
+
 import { createClient } from '@/utils/supabase/client'
 
 type Commit = {
@@ -109,23 +120,69 @@ export const Messages = () => {
 
   return (
     <>
-      <div className="mb-10 flex items-center gap-x-4 px-4">
-        <div
-          className={`flex cursor-pointer items-center gap-x-1 ${isActive == 'a' ? 'text-gray-900' : 'text-gray-400'}`}
-          onClick={() => setIsActive('a')}
-        >
-          <MessageSquareShare className="h-4 w-4" />
-          <span className="text-sm">{commits?.length}</span>
+      <div className="flex items-center justify-between border-b border-gray-100 px-4 pb-4">
+        <div className="flex items-center gap-x-4">
+          <div
+            className={`flex cursor-pointer items-center gap-x-1 ${isActive == 'a' ? 'text-gray-900' : 'text-gray-400'}`}
+            onClick={() => setIsActive('a')}
+          >
+            <MessageSquareShare className="h-4 w-4" />
+            <span className="text-sm">{commits?.length}</span>
+          </div>
+          <div
+            className={`flex cursor-pointer items-center gap-x-1 ${isActive == 'b' ? 'text-gray-900' : 'text-gray-400'}`}
+            onClick={() => setIsActive('b')}
+          >
+            <Bookmark className="h-4 w-4" />
+            <span className="text-sm">{bookmarks?.length}</span>
+          </div>
         </div>
-        <div
-          className={`flex cursor-pointer items-center gap-x-1 ${isActive == 'b' ? 'text-gray-900' : 'text-gray-400'}`}
-          onClick={() => setIsActive('b')}
-        >
-          <Bookmark className="h-4 w-4" />
-          <span className="text-sm">{bookmarks?.length}</span>
+        <div>
+          <Drawer>
+            <DrawerTrigger asChild>
+              <Button type="button" size="sm" className="ml-auto gap-1.5">
+                記録を作成する
+                <CornerDownLeft className="size-3.5" />
+              </Button>
+            </DrawerTrigger>
+            <DrawerContent className="mx-auto max-w-2xl">
+              <DrawerHeader>
+                <DrawerTitle>Are you absolutely sure?</DrawerTitle>
+                <DrawerDescription>This action cannot be undone.</DrawerDescription>
+              </DrawerHeader>
+              <div className="p-4">
+                <form
+                  className="relative overflow-hidden rounded-lg border bg-gray-100 focus-within:ring-1 focus-within:ring-ring"
+                  x-chunk="dashboard-03-chunk-1"
+                >
+                  <Label htmlFor="message" className="sr-only">
+                    Message
+                  </Label>
+                  <Textarea
+                    id="message"
+                    placeholder="メッセージを入力してください"
+                    value={value}
+                    className="min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0"
+                    minLength={0}
+                    maxLength={120}
+                    onChange={(e) => setValue(e.target.value)}
+                  />
+                </form>
+              </div>
+              <DrawerFooter>
+                <DrawerClose asChild>
+                  <Button type="button" onClick={handleInsert}>
+                    送信
+                  </Button>
+                </DrawerClose>
+                <DrawerClose asChild>
+                  <Button variant="outline">キャンセル</Button>
+                </DrawerClose>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
         </div>
       </div>
-
       <div className="relative flex flex-col lg:col-span-2">
         <div className="flex-1 overflow-auto">
           <div className="relative mx-auto flex max-w-2xl flex-col gap-y-4 px-4 py-4">
@@ -142,32 +199,6 @@ export const Messages = () => {
             )}
           </div>
         </div>
-      </div>
-
-      <div className="h-[20vh] border-t border-gray-100 p-4">
-        <form
-          className="relative mx-auto max-w-2xl overflow-hidden rounded-lg border bg-gray-100 focus-within:ring-1 focus-within:ring-ring"
-          x-chunk="dashboard-03-chunk-1"
-        >
-          <Label htmlFor="message" className="sr-only">
-            Message
-          </Label>
-          <Textarea
-            id="message"
-            placeholder="メッセージを入力してください"
-            value={value}
-            className="min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0"
-            minLength={0}
-            maxLength={120}
-            onChange={(e) => setValue(e.target.value)}
-          />
-          <div className="flex items-center p-3 pt-0">
-            <Button type="button" onClick={handleInsert} size="sm" className="ml-auto gap-1.5">
-              送信
-              <CornerDownLeft className="size-3.5" />
-            </Button>
-          </div>
-        </form>
       </div>
     </>
   )
@@ -192,40 +223,33 @@ function Commit({ data }: { data: Commit }) {
 
   return (
     <div className="flex items-start gap-x-4">
-      <div className="flex items-center justify-center rounded-full bg-gray-200 p-2">
-        <MessageSquareShare className="h-4 w-4 text-gray-500" />
-      </div>
       <div className="mt-1.5 w-full">
-        <div className="whitespace-pre-wrap text-sm">{data.message}</div>
+        <div className="flex items-center gap-x-2"></div>
+        <div className="whitespace-pre-wrap rounded-lg bg-gray-100 p-4 text-sm">{data.message}</div>
         <div className="mt-2 flex items-center justify-between">
-          <div className="flex items-center gap-x-0.5">
+          <span className="text-xs font-medium text-gray-500">
+            {format(data.created_at, 'yyyy-MM-dd HH:mm')}
+          </span>
+          <div className="flex items-center justify-end gap-x-0.5">
             <button
               type="button"
-              className="flex h-6 w-6 items-center justify-center rounded text-xs font-medium text-gray-900 hover:bg-gray-200"
-              onClick={() => {}}
-            >
-              <SquarePen className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              className="flex h-6 w-6 items-center justify-center rounded text-xs font-medium text-gray-900 hover:bg-gray-200"
-              onClick={() => handleDelete(data.id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              className="flex h-6 w-6 items-center justify-center rounded text-xs font-medium text-gray-900 hover:bg-gray-200"
+              className="flex h-6 w-6 items-center justify-center rounded text-xs font-medium text-gray-500 hover:bg-gray-200"
               onClick={() => {
                 handleBookmark(data.id)
               }}
             >
-              <Bookmark className={`h-4 w-4 ${data.bookmark && 'fill-gray-900'}`} />
+              <Bookmark
+                className={`h-4 w-4 ${data.bookmark && 'fill-yellow-500 text-yellow-500'}`}
+              />
+            </button>
+            <button
+              type="button"
+              className="flex h-6 w-6 items-center justify-center rounded text-xs font-medium text-gray-500 hover:bg-gray-200"
+              onClick={() => handleDelete(data.id)}
+            >
+              <Trash2 className="h-4 w-4" />
             </button>
           </div>
-          <span className="text-xs font-medium text-gray-400">
-            {format(data.created_at, 'yyyy-MM-dd HH:mm')}
-          </span>
         </div>
       </div>
     </div>
