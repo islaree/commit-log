@@ -6,8 +6,8 @@ import { format } from 'date-fns'
 
 import { createClient } from '@/utils/supabase/server'
 
-export async function productsAction() {
-  revalidatePath('/dashboard', 'page')
+export async function revalidate(url: string) {
+  revalidatePath(url)
 }
 
 export async function revalidatePosts(id: UUID) {
