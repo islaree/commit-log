@@ -1,11 +1,12 @@
-import { Form } from '@/components/form-post'
-import { Messages } from '@/components/messages'
-import { getPosts } from '@/db/posts'
-import { getProduct } from '@/db/products'
-import { UUID } from 'crypto'
-import { ChevronLeft, Ellipsis } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
+
+import { UUID } from 'crypto'
+import { ChevronLeft, Ellipsis } from 'lucide-react'
+
+import { Form } from '@/components/form-post'
+import { getPosts } from '@/db/posts'
+import { getProduct } from '@/db/products'
 
 export default function ProductPage({ params: { id } }: { params: { id: UUID } }) {
   return (
