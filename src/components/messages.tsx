@@ -7,8 +7,10 @@ import { format } from 'date-fns'
 import { Bookmark, MessageSquareShare, Trash2 } from 'lucide-react'
 
 import { createClient } from '@/utils/supabase/client'
-import { revalidatePosts } from '@/db/actions'
+import { revalidate, revalidatePosts } from '@/db/actions'
 import { useParams } from 'next/navigation'
+import { Input } from './ui/input'
+import { Button } from './ui/button'
 
 type Post = {
   id: UUID
@@ -23,6 +25,20 @@ export const Messages = ({ data }: { data: Post[] }) => {
 
   const [posts, setPosts] = useState(data)
   const [isActive, setIsActive] = useState('a')
+  const [value, setValue] = useState('')
+
+  const { id } = useParams()
+
+  const handleInsert = async () => {
+    await db.from('commits').insert({
+      product_id: id,
+      message: value,
+      created_at: format(new Date(), "yyyy-MM-dd'T'HH:mm:ssXXX"),
+    })
+
+    setValue('')
+    revalidate(`/dashboard/${id}`)
+  }
 
   useEffect(() => {
     const channel = db
@@ -64,6 +80,17 @@ export const Messages = ({ data }: { data: Post[] }) => {
 
   return (
     <>
+      <form className="relative" action={handleInsert}>
+        <Input
+          value={value}
+          placeholder="post message here..."
+          className="text-md h-10 pr-32"
+          onChange={(e) => setValue(e.target.value)}
+        />
+        <Button size="sm" type="submit" variant="default" className="absolute right-1 top-1">
+          追加
+        </Button>
+      </form>
       <div className="flex items-center justify-between border-b border-gray-100 px-4 pb-4">
         <div className="flex items-center gap-x-4">
           <div
