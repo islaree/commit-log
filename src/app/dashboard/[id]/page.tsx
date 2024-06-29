@@ -4,17 +4,14 @@ import { Suspense } from 'react'
 import { UUID } from 'crypto'
 import { ChevronLeft, Ellipsis } from 'lucide-react'
 
-import { Form } from '@/components/form-post'
 import { getPosts } from '@/db/posts'
 import { getProduct } from '@/db/products'
+import { Messages } from '@/components/messages'
 
 export default function ProductPage({ params: { id } }: { params: { id: UUID } }) {
   return (
     <>
       <ProductHeader id={id} />
-      <div className="px-4">
-        <Form id={id} />
-      </div>
       <Suspense>
         <ServerPosts id={id} />
       </Suspense>
@@ -25,16 +22,7 @@ export default function ProductPage({ params: { id } }: { params: { id: UUID } }
 async function ServerPosts({ id }: { id: UUID }) {
   const posts = await getPosts(id)
 
-  return (
-    <>
-      {posts?.map((post) => (
-        <div key={post.id} className="text-sm">
-          <span className="text-muted-foreground">{post.created_at}</span>
-          {post.message}
-        </div>
-      ))}
-    </>
-  )
+  return <Messages data={posts ?? []} />
 }
 
 async function ProductHeader({ id }: { id: UUID }) {
