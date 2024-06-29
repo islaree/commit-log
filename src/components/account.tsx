@@ -1,11 +1,6 @@
-'use client'
-
-import Image from 'next/image'
-
 import { User } from '@supabase/supabase-js'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-
 import {
   DropdownMenu,
   DropdownMenuContent,

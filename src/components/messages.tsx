@@ -1,36 +1,16 @@
 'use client'
 
-import { useParams } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { UUID } from 'crypto'
 import { format } from 'date-fns'
-import {
-  Bookmark,
-  CornerDownLeft,
-  Loader2,
-  MessageSquareShare,
-  SquarePen,
-  Trash2,
-} from 'lucide-react'
-
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer'
+import { Bookmark, MessageSquareShare, Trash2 } from 'lucide-react'
 
 import { createClient } from '@/utils/supabase/client'
+import { revalidatePosts } from '@/db/actions'
+import { useParams } from 'next/navigation'
 
-type Commit = {
+type Post = {
   id: UUID
   product_id: UUID
   message: string
@@ -38,48 +18,12 @@ type Commit = {
   bookmark: boolean
 }
 
-export const Messages = () => {
+export const Messages = ({ data }: { data: Post[] }) => {
   const db = createClient()
 
-  const { slug } = useParams()
-
-  const [value, setValue] = useState('')
-  const [commits, setCommits] = useState<Commit[] | null>(null)
-  const [bookmarks, setBookmarks] = useState<Commit[]>()
-  const [isLoading, setIsLoading] = useState(true)
+  const [posts, setPosts] = useState(data)
   const [isActive, setIsActive] = useState('a')
 
-  const handleInsert = async () => {
-    setValue('')
-    if (value.length > 0) {
-      await db.from('commits').insert({
-        product_id: slug,
-        message: value,
-        created_at: format(new Date(), "yyyy-MM-dd'T'HH:mm:ssXXX"),
-      })
-    }
-  }
-
-  const getCommitsData = useCallback(async () => {
-    const { data } = await db
-      .from('commits')
-      .select()
-      .eq('product_id', slug)
-      .order('created_at', { ascending: false })
-    setCommits(data)
-    setIsLoading(false)
-  }, [commits])
-
-  // 初期ロード時にデータを取得する
-  useEffect(() => {
-    getCommitsData()
-  }, [])
-
-  useEffect(() => {
-    setBookmarks(commits?.filter((c) => c.bookmark && c))
-  }, [commits])
-
-  // データベースを購読し、イベントをリアルタイムにデータベースへ伝える
   useEffect(() => {
     const channel = db
       .channel('realtime commits')
@@ -93,18 +37,18 @@ export const Messages = () => {
         (payload) => {
           switch (payload.eventType) {
             case 'INSERT':
-              setCommits([payload.new as Commit, ...commits!])
+              setPosts([payload.new as Post, ...posts])
               break
             case 'UPDATE':
-              setCommits(
-                commits!.map((c) => {
-                  if (c.id == payload.new.id) return payload.new as Commit
-                  else return c
+              setPosts(
+                posts.map((p) => {
+                  if (p.id == payload.new.id) return payload.new as Post
+                  else return p
                 }),
               )
               break
             case 'DELETE':
-              setCommits(commits!.filter((commit) => commit.id !== payload.old.id))
+              setPosts(posts.filter((p) => p.id !== payload.old.id))
               break
             default:
               return
@@ -116,7 +60,7 @@ export const Messages = () => {
     return () => {
       db.removeChannel(channel)
     }
-  }, [db, commits, setCommits])
+  }, [db, posts, setPosts])
 
   return (
     <>
@@ -127,76 +71,25 @@ export const Messages = () => {
             onClick={() => setIsActive('a')}
           >
             <MessageSquareShare className="h-4 w-4" />
-            <span className="text-sm">{commits?.length}</span>
+            <span className="text-sm"></span>
           </div>
           <div
             className={`flex cursor-pointer items-center gap-x-1 ${isActive == 'b' ? 'text-gray-900' : 'text-gray-400'}`}
             onClick={() => setIsActive('b')}
           >
             <Bookmark className="h-4 w-4" />
-            <span className="text-sm">{bookmarks?.length}</span>
+            <span className="text-sm">{}</span>
           </div>
-        </div>
-        <div>
-          <Drawer>
-            <DrawerTrigger asChild>
-              <Button type="button" size="sm" className="ml-auto gap-1.5">
-                記録を作成する
-                <CornerDownLeft className="size-3.5" />
-              </Button>
-            </DrawerTrigger>
-            <DrawerContent className="mx-auto max-w-2xl">
-              <DrawerHeader>
-                <DrawerTitle>Are you absolutely sure?</DrawerTitle>
-                <DrawerDescription>This action cannot be undone.</DrawerDescription>
-              </DrawerHeader>
-              <div className="p-4">
-                <form
-                  className="relative overflow-hidden rounded-lg border bg-gray-100 focus-within:ring-1 focus-within:ring-ring"
-                  x-chunk="dashboard-03-chunk-1"
-                >
-                  <Label htmlFor="message" className="sr-only">
-                    Message
-                  </Label>
-                  <Textarea
-                    id="message"
-                    placeholder="メッセージを入力してください"
-                    value={value}
-                    className="min-h-12 resize-none border-0 p-3 shadow-none focus-visible:ring-0"
-                    minLength={0}
-                    maxLength={120}
-                    onChange={(e) => setValue(e.target.value)}
-                  />
-                </form>
-              </div>
-              <DrawerFooter>
-                <DrawerClose asChild>
-                  <Button type="button" onClick={handleInsert}>
-                    送信
-                  </Button>
-                </DrawerClose>
-                <DrawerClose asChild>
-                  <Button variant="outline">キャンセル</Button>
-                </DrawerClose>
-              </DrawerFooter>
-            </DrawerContent>
-          </Drawer>
         </div>
       </div>
       <div className="relative flex flex-col lg:col-span-2">
         <div className="flex-1 overflow-auto">
           <div className="relative mx-auto flex max-w-2xl flex-col gap-y-4 px-4 py-4">
-            {isLoading ? (
-              <Loader2 className="h-6 w-6 animate-spin" />
-            ) : isActive == 'a' ? (
-              commits?.map((message) => <Commit key={message.id} data={message} />)
-            ) : isActive == 'b' ? (
-              commits?.map(
-                (message) => message.bookmark && <Commit key={message.id} data={message} />,
-              )
-            ) : (
-              'no data'
-            )}
+            {isActive == 'a'
+              ? posts?.map((post) => <Commit key={post.id} data={post} />)
+              : isActive == 'b'
+                ? posts?.map((post) => post.bookmark && <Commit key={post.id} data={post} />)
+                : ''}
           </div>
         </div>
       </div>
@@ -204,11 +97,14 @@ export const Messages = () => {
   )
 }
 
-function Commit({ data }: { data: Commit }) {
+function Commit({ data }: { data: Post }) {
   const db = createClient()
 
-  const handleDelete = async (id: UUID) => {
-    await db.from('commits').delete().eq('id', id)
+  const { id } = useParams()
+
+  const handleDelete = async (postId: UUID) => {
+    await db.from('commits').delete().eq('id', postId)
+    revalidatePosts(id as UUID)
   }
 
   const handleBookmark = async (id: UUID) => {
@@ -223,33 +119,25 @@ function Commit({ data }: { data: Commit }) {
 
   return (
     <div className="flex items-start gap-x-4">
-      <div className="mt-1.5 w-full">
-        <div className="flex items-center gap-x-2"></div>
-        <div className="whitespace-pre-wrap rounded-lg bg-gray-100 p-4 text-sm">{data.message}</div>
-        <div className="mt-2 flex items-center justify-between">
-          <span className="text-xs font-medium text-gray-500">
-            {format(data.created_at, 'yyyy-MM-dd HH:mm')}
-          </span>
-          <div className="flex items-center justify-end gap-x-0.5">
-            <button
-              type="button"
-              className="flex h-6 w-6 items-center justify-center rounded text-xs font-medium text-gray-500 hover:bg-gray-200"
-              onClick={() => {
-                handleBookmark(data.id)
-              }}
-            >
-              <Bookmark
-                className={`h-4 w-4 ${data.bookmark && 'fill-yellow-500 text-yellow-500'}`}
-              />
-            </button>
-            <button
-              type="button"
-              className="flex h-6 w-6 items-center justify-center rounded text-xs font-medium text-gray-500 hover:bg-gray-200"
-              onClick={() => handleDelete(data.id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
+      <div className="mt-1.5 space-y-2">
+        <div className="space-x-2 align-middle text-sm">
+          <div className="inline text-muted-foreground">
+            {format(data.created_at, 'yyyy-MM-dd HH:mm')}:
           </div>
+          <div className="inline whitespace-normal">{data.message}</div>
+        </div>
+        <div className="flex items-center gap-x-2 text-muted-foreground">
+          <button
+            type="button"
+            onClick={() => {
+              handleBookmark(data.id)
+            }}
+          >
+            <Bookmark className={`h-4 w-4 ${data.bookmark && 'fill-yellow-500 text-yellow-500'}`} />
+          </button>
+          <button type="button" onClick={() => handleDelete(data.id)}>
+            <Trash2 className="h-4 w-4" />
+          </button>
         </div>
       </div>
     </div>
