@@ -1,100 +1,102 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
-import { Bookmark, MessageSquareShare } from 'lucide-react'
-import { User } from '@supabase/supabase-js'
+import { useEffect, useState } from 'react'
 
-import { CreateProduct } from '@/components/product-create'
-import { insert, initialize, DELETE, UPDATE } from '@/lib/features/products/products-slice'
-import { useAppDispatch, useAppSelector } from '@/lib/hooks'
+import { UUID } from 'crypto'
+
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { productsAction } from '@/db/actions'
 import { createClient } from '@/utils/supabase/client'
-import { ProductItem } from './product-item'
+import { insertProducts } from '@/db/actions'
 
-export const Products = ({ user }: { user: User | null }) => {
-  const [isLoading, setIsLoading] = useState(true)
+type Product = {
+  id: UUID
+  name: string
+  user_id: UUID
+}
 
-  const products = useAppSelector((state) => state.products)
-  const dispatch = useAppDispatch()
-
+export const Productss = ({ data, userId }: { data: Product[]; userId: string }) => {
   const db = createClient()
+  const [products, setProducts] = useState(data)
+  const [name, setName] = useState('')
 
-  const getData = useCallback(async () => {
-    try {
-      const { data, error, status } = await db
-        .from('products')
-        .select()
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: true })
+  const handleInsert = async () => {
+    setName('')
 
-      if (error && status !== 406) {
-        throw error
-      }
+    await db.from('products').insert({
+      user_id: userId,
+      name: name,
+    })
 
-      if (data) {
-        dispatch(initialize(data))
-        setIsLoading(false)
-      }
-    } catch (error) {
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }, [products])
+    productsAction()
+  }
 
-  useEffect(() => {
-    getData()
-  }, [])
+  const handleDelete = async (id: string) => {
+    await db.from('products').delete().eq('id', id)
+    productsAction()
+  }
 
-  useEffect(() => {
-    const channel = db
-      .channel('realtime products')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'products',
-        },
-        (payload) => {
-          switch (payload.eventType) {
-            case 'INSERT':
-              dispatch(insert(payload.new))
-              break
-            case 'UPDATE':
-              dispatch(UPDATE(payload.new))
-              break
-            case 'DELETE':
-              dispatch(DELETE(payload.old.id))
-              break
-            default:
-              return
-          }
-        },
-      )
-      .subscribe()
+  // useEffect(() => {
+  //   const channel = db
+  //     .channel('realtime products')
+  //     .on(
+  //       'postgres_changes',
+  //       {
+  //         event: '*',
+  //         schema: 'public',
+  //         table: 'products',
+  //       },
+  //       (payload) => {
+  //         switch (payload.eventType) {
+  //           case 'INSERT':
+  //             setProducts([...products, payload.new as Product])
+  //             break
+  //           case 'UPDATE':
+  //             break
+  //           case 'DELETE':
+  //             setProducts(products.filter((p) => p.id != payload.old.id))
+  //             break
+  //           default:
+  //             return
+  //         }
+  //       },
+  //     )
+  //     .subscribe()
 
-    return () => {
-      db.removeChannel(channel)
-    }
-  }, [db, products])
+  //   return () => {
+  //     db.removeChannel(channel)
+  //   }
+  // }, [db, products])
 
   return (
     <>
-      <div className="flex justify-end">
-        <CreateProduct user={user} />
+      <div>
+        <form className="relative" action={async () => insertProducts(userId, name)}>
+          <Input
+            value={name}
+            placeholder="product name here..."
+            className="text-md h-10 pr-32"
+            onChange={(e) => setName(e.target.value)}
+          />
+          <Button size="sm" type="submit" variant="default" className="absolute right-1 top-1">
+            追加
+          </Button>
+        </form>
       </div>
-      <div className="flex flex-col gap-y-4">
-        {isLoading ? (
-          <></>
-        ) : (
-          products?.map((product) => (
-            <div key={product.id}>
-              <ProductItem product={product} />
-            </div>
-          ))
-        )}
-      </div>
+      {products.map((product) => (
+        <div key={product.id}>
+          <div className="font-medium">
+            <Link href={`/dashboard/${product.id}`}>{product.name}</Link>
+          </div>
+          <div>
+            <button className="text-muted-foreground" onClick={() => handleDelete(product.id)}>
+              delete
+            </button>
+          </div>
+        </div>
+      ))}
     </>
   )
 }
