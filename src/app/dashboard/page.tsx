@@ -1,10 +1,9 @@
-import Link from 'next/link'
 import { Suspense } from 'react'
 
 import { Account } from '@/components/account'
-import { DeleteProduct, CreateProduct } from '@/components/form-products'
 import { getProducts } from '@/db/products'
 import { getUser } from '@/db/user'
+import { Products } from '@/components/products'
 
 export default async function Dashboard() {
   const user = await getUser()
@@ -16,29 +15,17 @@ export default async function Dashboard() {
           <Account user={user} />
         </Suspense>
       </div>
-      <CreateProduct id={user?.id ?? ''} />
       <div className="mt-6 flex flex-col gap-y-4">
-        <Suspense>
-          <Products userId={user?.id ?? ''} />
+        <Suspense fallback={<>loading...</>}>
+          <ProductsWrapper userId={user?.id ?? ''} />
         </Suspense>
       </div>
     </div>
   )
 }
 
-async function Products({ userId }: { userId: string }) {
+async function ProductsWrapper({ userId }: { userId: string }) {
   const products = await getProducts(userId)
 
-  return (
-    <>
-      {products?.map((product) => (
-        <div key={product.id}>
-          <div className="font-medium">
-            <Link href={`/dashboard/${product.id}`}>{product.name}</Link>
-          </div>
-          <DeleteProduct id={product.id} />
-        </div>
-      ))}
-    </>
-  )
+  return <Products data={products ?? []} userId={userId} />
 }
