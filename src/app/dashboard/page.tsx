@@ -4,6 +4,8 @@ import { Account } from '@/components/account'
 import { getProducts } from '@/db/products'
 import { getUser } from '@/db/user'
 import { Products } from '@/components/products'
+import { ProductCreateForm } from '@/components/form'
+import { Input } from '@/components/ui/input'
 
 export default async function Dashboard() {
   const user = await getUser()
@@ -16,7 +18,8 @@ export default async function Dashboard() {
         </Suspense>
       </div>
       <div className="mt-6 flex flex-col gap-y-4">
-        <Suspense fallback={<>loading...</>}>
+        <ProductCreateForm userId={user?.id ?? ''} />
+        <Suspense>
           <ProductsWrapper userId={user?.id ?? ''} />
         </Suspense>
       </div>
@@ -27,5 +30,5 @@ export default async function Dashboard() {
 async function ProductsWrapper({ userId }: { userId: string }) {
   const products = await getProducts(userId)
 
-  return <Products data={products ?? []} userId={userId} />
+  return <Products data={products ?? []} />
 }
