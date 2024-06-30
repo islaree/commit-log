@@ -16,21 +16,10 @@ type Product = {
   user_id: UUID
 }
 
-export const Products = ({ data, userId }: { data: Product[]; userId: string }) => {
+export const Products = ({ data }: { data: Product[] }) => {
   const db = createClient()
 
   const [products, setProducts] = useState(data)
-  const [name, setName] = useState('')
-
-  const handleInsert = async () => {
-    await db.from('products').insert({
-      user_id: userId,
-      name: name,
-    })
-
-    setName('')
-    revalidate('/dashboard')
-  }
 
   const handleDelete = async (id: string) => {
     await db.from('products').delete().eq('id', id)
@@ -71,19 +60,6 @@ export const Products = ({ data, userId }: { data: Product[]; userId: string }) 
 
   return (
     <>
-      <div>
-        <form className="relative" action={handleInsert}>
-          <Input
-            value={name}
-            placeholder="product name here..."
-            className="text-md h-10 pr-32"
-            onChange={(e) => setName(e.target.value)}
-          />
-          <Button size="sm" type="submit" variant="default" className="absolute right-1 top-1">
-            追加
-          </Button>
-        </form>
-      </div>
       {products.map((product) => (
         <div key={product.id}>
           <div className="font-medium">
