@@ -6,7 +6,7 @@ import { UUID } from 'crypto'
 import { format } from 'date-fns'
 import { Bookmark, MessageSquareShare, Trash2 } from 'lucide-react'
 
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/db/client'
 import { revalidate, revalidatePosts } from '@/db/actions'
 import { useParams } from 'next/navigation'
 import { Input } from './ui/input'

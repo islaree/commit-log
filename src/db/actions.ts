@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { UUID } from 'crypto'
 import { format } from 'date-fns'
 
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/db/server'
 
 export async function revalidate(url: string) {
   revalidatePath(url)
