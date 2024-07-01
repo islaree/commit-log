@@ -8,7 +8,7 @@ import { UUID } from 'crypto'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { revalidate } from '@/db/actions'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/db/client'
 
 type Product = {
   id: UUID

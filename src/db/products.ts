@@ -1,6 +1,6 @@
 import { UUID } from 'crypto'
 
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/db/server'
 import { revalidatePath } from 'next/cache'
 
 export async function getProducts(userId: string) {
